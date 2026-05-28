@@ -1,0 +1,63 @@
+
+# ── Kategori Produk ──────────────────────────
+type Category {
+  id:        ID!
+  name:      String!   
+  products:  [Product!]
+}
+
+# ── Brand / Merek ────────────────────────────
+type Brand {
+  id:       ID!
+  name:     String!   
+  country:  String
+  products: [Product!]
+}
+
+# ── Supplier ─────────────────────────────────
+type Supplier {
+  id:       ID!
+  name:     String!
+  contact:  String
+  address:  String
+  stockIns: [StockIn!]
+}
+
+# ── Produk Utama ──────────────────────────────
+type Product {
+  id:         ID!
+  name:       String!
+  sku:        String!   
+  price:      Float!
+  stock:      Int!
+  category:  Category!
+  brand:      Brand!
+  stockIns:  [StockIn!]
+  stockOuts: [StockOut!]
+}
+
+# ── Riwayat Stok Masuk ────────────────────────
+type StockIn {
+  id:        ID!
+  product:   Product!
+  supplier:  Supplier!
+  quantity:  Int!
+  date:      String!
+  notes:     String
+}
+
+# ── Riwayat Stok Keluar ──────────────────────
+type StockOut {
+  id:        ID!
+  product:   Product!
+  quantity:  Int!
+  reason:    StockOutReason!
+  date:      String!
+}
+
+# ── Enum Alasan Stok Keluar ───────────────────
+enum StockOutReason {
+  SOLD
+  DAMAGED
+  RETURNED
+}

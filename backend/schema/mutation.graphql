@@ -1,0 +1,23 @@
+type Mutation {
+  # ── Produk ───────────────────────────────────
+  addProduct(input: AddProductInput!):    Product!
+  updateProduct(
+    id:    ID!
+    input: UpdateProductInput!
+  ): Product!
+  deleteProduct(id: ID!):               Boolean!
+
+  # ── Stok ─────────────────────────────────────
+  createStockIn(input: StockInInput!):   StockIn!
+  createStockOut(input: StockOutInput!): StockOut!
+
+  # ── Supplier ─────────────────────────────────
+  addSupplier(input: AddSupplierInput!): Supplier!
+
+  # ── Kategori & Brand ─────────────────────────
+  addCategory(name: String!):           Category!
+  addBrand(
+    name:    String!
+    country: String
+  ): Brand!
+}

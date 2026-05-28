@@ -1,0 +1,32 @@
+type Query {
+  # ── Produk ───────────────────────────────────
+  getProducts(
+    categoryId: ID
+    brandId:    ID
+    search:     String
+  ): [Product!]!
+
+  getProductById(id: ID!): Product
+
+  getLowStockProducts(
+    threshold: Int   # default: 5
+  ): [Product!]!
+
+  # ── Kategori & Brand ─────────────────────────
+  getCategories: [Category!]!
+  getBrands:     [Brand!]!
+
+  # ── Supplier ─────────────────────────────────
+  getSuppliers:  [Supplier!]!
+
+  # ── Riwayat ──────────────────────────────────
+  getStockHistory(
+    productId: ID
+    type:      String   # "IN" | "OUT"
+  ): StockHistory!
+}
+
+type StockHistory {
+  stockIns:  [StockIn!]!
+  stockOuts: [StockOut!]!
+}

@@ -1,0 +1,17 @@
+{
+  "name": "sports-inventory-backend",
+  "version": "1.0.0",
+  "description": "GraphQL API for Sports Inventory",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "@apollo/server": "^4.10.0",
+    "graphql": "^16.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}

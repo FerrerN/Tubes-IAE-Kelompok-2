@@ -1,0 +1,36 @@
+input AddProductInput {
+  name:       String!
+  sku:        String!
+  price:      Float!
+  stock:      Int!
+  categoryId: ID!
+  brandId:    ID!
+}
+
+input UpdateProductInput {
+  name:       String
+  price:      Float
+  categoryId: ID
+  brandId:    ID
+}
+
+input StockInInput {
+  productId:  ID!
+  supplierId: ID!
+  quantity:   Int!
+  date:       String!
+  notes:      String
+}
+
+input StockOutInput {
+  productId: ID!
+  quantity:  Int!
+  reason:    StockOutReason!
+  date:      String!
+}
+
+input AddSupplierInput {
+  name:    String!
+  contact: String
+  address: String
+}
