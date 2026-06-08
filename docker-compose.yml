@@ -1,19 +1,50 @@
 version: '3.8'
 
 services:
+  # ┌─────────────────────────────────────────┐
+  # │  SERVICE DATABASE (MySQL)               │
+  # └─────────────────────────────────────────┘
+  db:
+    image: mysql:8.0
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: inventaris_toko
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # ┌─────────────────────────────────────────┐
+  # │  SERVICE BACKEND (Node.js/GraphQL)      │
+  # └─────────────────────────────────────────┘
   backend:
     build: ./backend
     ports:
       - "4000:4000"
     environment:
       - PORT=4000
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=sport_db
+      - DB_USER=root
+      - DB_PASS=rootpassword
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
+    depends_on:
+      - db # Memastikan database jalan sebelum backend di-start
 
+  # ┌─────────────────────────────────────────┐
+  # │  SERVICE CLIENT (Frontend Nginx)        │
+  # └─────────────────────────────────────────┘
   client:
     image: nginx:alpine
     ports:
       - "8080:80"
     volumes:
       - ./client:/usr/share/nginx/html
+
+# Mendeklarasikan volume untuk menyimpan data MySQL secara permanen
+volumes:
+  mysql_data:

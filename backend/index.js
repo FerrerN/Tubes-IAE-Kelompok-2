@@ -34,6 +34,12 @@ const resolvers = {
 };
 
 async function startServer() {
+  try {
+    await db.sequelize.authenticate();
+    console.log('✅ Koneksi ke MySQL berhasil.');
+  } catch (error) {
+    console.error('❌ Gagal terhubung ke MySQL:', error);
+  }
   const server = new ApolloServer({
     typeDefs,
     resolvers,
