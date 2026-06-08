@@ -1,19 +1,468 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sports Inventory Dashboard</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #333; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sports Inventory — Dashboard</title>
+  <meta name="description" content="Dashboard inventaris perlengkapan olahraga. Kelola produk, stok, kategori, brand, dan supplier dalam satu platform." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-    <div class="container">
-        <h1>Sports Inventory Dashboard</h1>
-        <p>Frontend placeholder for the GraphQL backend.</p>
+
+<!-- ══════════════════════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">⚽</div>
+    <div>
+      <h1>Sports<br>Inventory</h1>
+      <span>v1.0 — Kelompok 2</span>
     </div>
+  </div>
+
+  <p class="nav-section-label">Menu Utama</p>
+
+  <div class="nav-item active" data-page="dashboard">
+    <span class="icon">📊</span>
+    <span class="nav-label">Dashboard</span>
+  </div>
+  <div class="nav-item" data-page="products">
+    <span class="icon">📦</span>
+    <span class="nav-label">Produk</span>
+  </div>
+  <div class="nav-item" data-page="stock">
+    <span class="icon">🔄</span>
+    <span class="nav-label">Transaksi Stok</span>
+  </div>
+
+  <p class="nav-section-label">Master Data</p>
+
+  <div class="nav-item" data-page="entities">
+    <span class="icon">🗂️</span>
+    <span class="nav-label">Kategori, Brand & Supplier</span>
+  </div>
+
+  <div class="sidebar-footer">
+    IAE — Kelompok 2<br>
+    GraphQL · MySQL · Node.js
+  </div>
+</aside>
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div>
+      <h2>Dashboard</h2>
+      <p class="subtitle">Selamat datang di Sports Inventory Management</p>
+    </div>
+    <div class="topbar-actions">
+      <div class="status-badge">
+        <div class="status-dot"></div>
+        API Connected
+      </div>
+    </div>
+  </header>
+
+  <!-- ── PAGE: DASHBOARD ─────────────────────────────────── -->
+  <section class="page active" id="page-dashboard">
+
+    <!-- Metrics -->
+    <div class="metrics-grid">
+      <div class="metric-card" style="--gradient: linear-gradient(90deg, #8b5cf6, #3b82f6);">
+        <div class="metric-icon">📦</div>
+        <div class="metric-label">Total Produk</div>
+        <div class="metric-value" id="metric-products">—</div>
+      </div>
+      <div class="metric-card" style="--gradient: linear-gradient(90deg, #10b981, #3b82f6);">
+        <div class="metric-icon">🏷️</div>
+        <div class="metric-label">Kategori</div>
+        <div class="metric-value" id="metric-categories">—</div>
+      </div>
+      <div class="metric-card" style="--gradient: linear-gradient(90deg, #f59e0b, #ef4444);">
+        <div class="metric-icon">⭐</div>
+        <div class="metric-label">Brand</div>
+        <div class="metric-value" id="metric-brands">—</div>
+      </div>
+      <div class="metric-card" style="--gradient: linear-gradient(90deg, #06b6d4, #8b5cf6);">
+        <div class="metric-icon">🏭</div>
+        <div class="metric-label">Supplier</div>
+        <div class="metric-value" id="metric-suppliers">—</div>
+      </div>
+      <div class="metric-card danger" style="--gradient: linear-gradient(90deg, #ef4444, #f59e0b);">
+        <div class="metric-icon">⚠️</div>
+        <div class="metric-label">Stok Rendah</div>
+        <div class="metric-value" id="metric-lowstock">—</div>
+      </div>
+    </div>
+
+    <!-- Low Stock Alert -->
+    <div class="section-header">
+      <div>
+        <div class="section-title">⚠️ Alert — Produk Stok Rendah</div>
+        <div class="section-subtitle">Produk dengan stok ≤ 5 unit</div>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Nama Produk</th>
+            <th>Sisa Stok</th>
+          </tr>
+        </thead>
+        <tbody id="lowstock-tbody">
+          <tr><td colspan="2" style="text-align:center;padding:20px;"><span class="spinner"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ── PAGE: PRODUCTS ──────────────────────────────────── -->
+  <section class="page" id="page-products">
+
+    <div class="section-header mb-16">
+      <div>
+        <div class="section-title">📦 Manajemen Produk</div>
+        <div class="section-subtitle">Kelola semua produk inventaris olahraga</div>
+      </div>
+      <button class="btn btn-primary" id="btn-add-product">➕ Tambah Produk</button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-product" placeholder="Cari nama atau SKU produk..."
+               oninput="filterProducts()" />
+      </div>
+      <select class="select-filter" id="filter-category" onchange="filterProducts()">
+        <option value="">Semua Kategori</option>
+      </select>
+      <select class="select-filter" id="filter-brand" onchange="filterProducts()">
+        <option value="">Semua Brand</option>
+      </select>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Nama Produk</th>
+            <th>SKU</th>
+            <th>Harga</th>
+            <th>Stok</th>
+            <th>Kategori</th>
+            <th>Brand</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="product-tbody">
+          <tr><td colspan="7" style="text-align:center;padding:24px;"><span class="spinner"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ── PAGE: STOCK TRANSACTIONS ──────────────────────────── -->
+  <section class="page" id="page-stock">
+
+    <div class="section-header mb-16">
+      <div>
+        <div class="section-title">🔄 Transaksi Stok</div>
+        <div class="section-subtitle">Catat stok masuk (dari supplier) dan stok keluar (penjualan/rusak)</div>
+      </div>
+    </div>
+
+    <div class="two-col mb-24">
+      <!-- Stock In Form -->
+      <div class="form-card">
+        <h3>📥 Stok Masuk</h3>
+        <form id="stockin-form">
+          <div class="form-group">
+            <label>Produk</label>
+            <select class="form-control" id="stockin-product" required></select>
+          </div>
+          <div class="form-group">
+            <label>Supplier</label>
+            <select class="form-control" id="stockin-supplier" required></select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Jumlah</label>
+              <input type="number" class="form-control" id="stockin-quantity" min="1" required placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label>Tanggal</label>
+              <input type="date" class="form-control" id="stockin-date" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Catatan (opsional)</label>
+            <input type="text" class="form-control" id="stockin-notes" placeholder="Keterangan tambahan..." />
+          </div>
+          <button type="submit" class="btn btn-success" style="width:100%">✅ Catat Stok Masuk</button>
+        </form>
+      </div>
+
+      <!-- Stock Out Form -->
+      <div class="form-card">
+        <h3>📤 Stok Keluar</h3>
+        <form id="stockout-form">
+          <div class="form-group">
+            <label>Produk</label>
+            <select class="form-control" id="stockout-product" required></select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Jumlah</label>
+              <input type="number" class="form-control" id="stockout-quantity" min="1" required placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label>Alasan</label>
+              <select class="form-control" id="stockout-reason" required>
+                <option value="SOLD">Terjual</option>
+                <option value="DAMAGED">Rusak/Cacat</option>
+                <option value="RETURNED">Dikembalikan</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Tanggal</label>
+            <input type="date" class="form-control" id="stockout-date" required />
+          </div>
+          <button type="submit" class="btn btn-danger" style="width:100%;margin-top:28px;">🚫 Catat Stok Keluar</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- History Tables -->
+    <div class="two-col">
+      <!-- Stock In History -->
+      <div>
+        <div class="section-header mb-16">
+          <div class="section-title">📋 Riwayat Stok Masuk</div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Produk</th><th>Qty</th><th>Supplier</th><th>Tanggal</th></tr>
+            </thead>
+            <tbody id="stockin-history"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Stock Out History -->
+      <div>
+        <div class="section-header mb-16">
+          <div class="section-title">📋 Riwayat Stok Keluar</div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Produk</th><th>Qty</th><th>Alasan</th><th>Tanggal</th></tr>
+            </thead>
+            <tbody id="stockout-history"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── PAGE: ENTITIES ─────────────────────────────────── -->
+  <section class="page" id="page-entities">
+
+    <!-- CATEGORIES -->
+    <div class="section-header mb-16">
+      <div>
+        <div class="section-title">🏷️ Kategori Produk</div>
+        <div class="section-subtitle">Tambah dan lihat kategori produk olahraga</div>
+      </div>
+    </div>
+
+    <div class="two-col mb-24">
+      <div>
+        <div id="categories-grid" class="card-grid"></div>
+      </div>
+      <div class="form-card">
+        <h3>➕ Tambah Kategori</h3>
+        <form id="add-category-form">
+          <div class="form-group">
+            <label>Nama Kategori</label>
+            <input type="text" class="form-control" id="add-category-name" placeholder="Contoh: Sepatu, Bola, Jersey..." required />
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%">Simpan Kategori</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- BRANDS -->
+    <div class="section-header mb-16">
+      <div>
+        <div class="section-title">⭐ Brand / Merek</div>
+        <div class="section-subtitle">Tambah dan lihat brand produk</div>
+      </div>
+    </div>
+
+    <div class="two-col mb-24">
+      <div>
+        <div id="brands-grid" class="card-grid"></div>
+      </div>
+      <div class="form-card">
+        <h3>➕ Tambah Brand</h3>
+        <form id="add-brand-form">
+          <div class="form-group">
+            <label>Nama Brand</label>
+            <input type="text" class="form-control" id="add-brand-name" placeholder="Contoh: Nike, Adidas..." required />
+          </div>
+          <div class="form-group">
+            <label>Negara Asal (opsional)</label>
+            <input type="text" class="form-control" id="add-brand-country" placeholder="Contoh: USA, Germany..." />
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%">Simpan Brand</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- SUPPLIERS -->
+    <div class="section-header mb-16">
+      <div>
+        <div class="section-title">🏭 Supplier</div>
+        <div class="section-subtitle">Tambah dan lihat daftar supplier</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div id="suppliers-grid" class="card-grid"></div>
+      </div>
+      <div class="form-card">
+        <h3>➕ Tambah Supplier</h3>
+        <form id="add-supplier-form">
+          <div class="form-group">
+            <label>Nama Supplier</label>
+            <input type="text" class="form-control" id="add-supplier-name" placeholder="Contoh: PT. Sports Distributor..." required />
+          </div>
+          <div class="form-group">
+            <label>Kontak (opsional)</label>
+            <input type="text" class="form-control" id="add-supplier-contact" placeholder="Nomor telepon / email..." />
+          </div>
+          <div class="form-group">
+            <label>Alamat (opsional)</label>
+            <input type="text" class="form-control" id="add-supplier-address" placeholder="Alamat lengkap supplier..." />
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%">Simpan Supplier</button>
+        </form>
+      </div>
+    </div>
+
+  </section>
+
+</div> <!-- /main -->
+
+<!-- ══════════════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════════════ -->
+
+<!-- Modal: Add Product -->
+<div class="modal-overlay" id="modal-add-product">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>➕ Tambah Produk Baru</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-product')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="add-product-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nama Produk *</label>
+            <input type="text" class="form-control" id="add-product-name" placeholder="Nama produk..." required />
+          </div>
+          <div class="form-group">
+            <label>SKU *</label>
+            <input type="text" class="form-control" id="add-product-sku" placeholder="Contoh: NIKE-001" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Harga (Rp) *</label>
+            <input type="number" class="form-control" id="add-product-price" placeholder="0" min="0" required />
+          </div>
+          <div class="form-group">
+            <label>Stok Awal</label>
+            <input type="number" class="form-control" id="add-product-stock" placeholder="0" min="0" value="0" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Kategori *</label>
+            <select class="form-control" id="add-product-category" required></select>
+          </div>
+          <div class="form-group">
+            <label>Brand *</label>
+            <select class="form-control" id="add-product-brand" required></select>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding:0;border:none;margin-top:16px;">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-product')">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Produk</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edit Product -->
+<div class="modal-overlay" id="modal-edit-product">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>✏️ Edit Produk</h3>
+      <button class="modal-close" onclick="closeModal('modal-edit-product')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="edit-product-form">
+        <input type="hidden" id="edit-product-id" />
+        <div class="form-group">
+          <label>Nama Produk *</label>
+          <input type="text" class="form-control" id="edit-product-name" required />
+        </div>
+        <div class="form-group">
+          <label>Harga (Rp) *</label>
+          <input type="number" class="form-control" id="edit-product-price" min="0" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Kategori</label>
+            <select class="form-control" id="edit-product-category"></select>
+          </div>
+          <div class="form-group">
+            <label>Brand</label>
+            <select class="form-control" id="edit-product-brand"></select>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding:0;border:none;margin-top:16px;">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('modal-edit-product')">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TOAST CONTAINER
+══════════════════════════════════════════════════════════ -->
+<div id="toast-container"></div>
+
+<script src="js/app.js"></script>
 </body>
 </html>
