@@ -10,8 +10,8 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: inventaris_toko
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: sport_db
+      MYSQL_ROOT_PASSWORD: 
     volumes:
       - mysql_data:/var/lib/mysql
 
@@ -28,7 +28,7 @@ services:
       - DB_PORT=3306
       - DB_NAME=sport_db
       - DB_USER=root
-      - DB_PASS=rootpassword
+      - DB_PASS=
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
@@ -39,11 +39,11 @@ services:
   # │  SERVICE CLIENT (Frontend Nginx)        │
   # └─────────────────────────────────────────┘
   client:
-    image: nginx:alpine
+    build: ./client
     ports:
       - "8080:80"
-    volumes:
-      - ./client:/usr/share/nginx/html
+    depends_on:
+      - backend
 
 # Mendeklarasikan volume untuk menyimpan data MySQL secara permanen
 volumes:
