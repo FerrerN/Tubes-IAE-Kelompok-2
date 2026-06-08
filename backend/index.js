@@ -2,6 +2,7 @@ const { ApolloServer } = require('@apollo/server');
 const { startStandaloneServer } = require('@apollo/server/standalone');
 const fs = require('fs');
 const path = require('path');
+const initDB = require('./db/init');
 
 // Read schemas
 const types = fs.readFileSync(path.join(__dirname, 'schema', 'types.graphql'), 'utf8');
@@ -29,10 +30,19 @@ const resolvers = {
     ...stockResolver.Mutation,
     ...supplierResolver.Mutation,
     ...categoryBrandResolver.Mutation,
-  }
+  },
+  Product: productResolver.Product,
+  StockIn: stockResolver.StockIn,
+  StockOut: stockResolver.StockOut,
+  Supplier: supplierResolver.Supplier,
+  Category: categoryBrandResolver.Category,
+  Brand: categoryBrandResolver.Brand,
 };
 
 async function startServer() {
+  // Inisialisasi database sebelum server berjalan
+  await initDB();
+
   const server = new ApolloServer({
     typeDefs,
     resolvers,
