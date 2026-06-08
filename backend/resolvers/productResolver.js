@@ -78,7 +78,6 @@ module.exports = {
       const trimmedSku = sku.trim();
       const trimmedName = name.trim();
 
-<<<<<<< Updated upstream
       // 3. Simpan ke MySQL via Sequelize
       const product = await Product.create({
         name, sku, price,
@@ -96,7 +95,6 @@ module.exports = {
     deleteProduct: async (_, { id }) => {
 
       // 1. Validasi ID tidak kosong
-=======
       try {
         // 2. Cek apakah SKU sudah ada
         const [existingSku] = await pool.execute('SELECT id FROM produk WHERE sku = ?', [trimmedSku]);
@@ -140,12 +138,10 @@ module.exports = {
     updateProduct: async (_, { id, input }) => {
       const { name, price, categoryId, brandId } = input;
 
->>>>>>> Stashed changes
       if (!id) {
         throw new Error('ID produk wajib diisi');
       }
 
-<<<<<<< Updated upstream
       // 2. Cari produk dulu — pastikan ada
       const product = await Product.findByPk(id);
       if (!product) {
@@ -160,120 +156,4 @@ module.exports = {
     // Lanjut Fauzi
     
   }
-=======
-      try {
-        // 1. Cari produk memastikan ada
-        const [existingRows] = await pool.execute('SELECT * FROM produk WHERE id = ?', [id]);
-        if (existingRows.length === 0) {
-          throw new Error(`Produk dengan ID "${id}" tidak ditemukan`);
-        }
-        const currentProduct = existingRows[0];
-
-        // 2. Validasi Kategori jika dirubah
-        if (categoryId !== undefined && categoryId !== null) {
-          const [existingCategory] = await pool.execute('SELECT id FROM kategori WHERE id = ?', [categoryId]);
-          if (existingCategory.length === 0) {
-            throw new Error(`Kategori dengan ID "${categoryId}" tidak ditemukan`);
-          }
-        }
-
-        // 3. Validasi Brand jika dirubah
-        if (brandId !== undefined && brandId !== null) {
-          const [existingBrand] = await pool.execute('SELECT id FROM brand WHERE id = ?', [brandId]);
-          if (existingBrand.length === 0) {
-            throw new Error(`Brand dengan ID "${brandId}" tidak ditemukan`);
-          }
-        }
-
-        // 4. Buat query update dinamis
-        const updates = [];
-        const params = [];
-
-        if (name !== undefined) {
-          updates.push('nama = ?');
-          params.push(name.trim());
-        }
-        if (price !== undefined) {
-          if (price < 0) throw new Error('Harga produk tidak boleh kurang dari 0');
-          updates.push('harga = ?');
-          params.push(price);
-        }
-        if (categoryId !== undefined) {
-          updates.push('kategori_id = ?');
-          params.push(categoryId);
-        }
-        if (brandId !== undefined) {
-          updates.push('brand_id = ?');
-          params.push(brandId);
-        }
-
-        if (updates.length > 0) {
-          params.push(id);
-          const updateSql = `UPDATE produk SET ${updates.join(', ')} WHERE id = ?`;
-          await pool.execute(updateSql, params);
-        }
-
-        // Ambil data terbaru untuk dikembalikan
-        const [updatedRows] = await pool.execute('SELECT * FROM produk WHERE id = ?', [id]);
-        return mapProduct(updatedRows[0]);
-      } catch (error) {
-        throw new Error(`Gagal mengupdate produk: ${error.message}`);
-      }
-    },
-
-    deleteProduct: async (_, { id }) => {
-      if (!id) {
-        throw new Error('ID produk wajib diisi');
-      }
-
-      try {
-        // Cek apakah produk ada
-        const [existing] = await pool.execute('SELECT id FROM produk WHERE id = ?', [id]);
-        if (existing.length === 0) {
-          throw new Error(`Produk dengan ID "${id}" tidak ditemukan`);
-        }
-
-        await pool.execute('DELETE FROM produk WHERE id = ?', [id]);
-        return true;
-      } catch (error) {
-        throw new Error(`Gagal menghapus produk: ${error.message}`);
-      }
-    },
-  },
-
-  Product: {
-    category: async (product) => {
-      try {
-        const [rows] = await pool.execute('SELECT * FROM kategori WHERE id = ?', [product.categoryId]);
-        return rows.length > 0 ? mapCategory(rows[0]) : null;
-      } catch (error) {
-        throw new Error(`Gagal memuat kategori produk: ${error.message}`);
-      }
-    },
-    brand: async (product) => {
-      try {
-        const [rows] = await pool.execute('SELECT * FROM brand WHERE id = ?', [product.brandId]);
-        return rows.length > 0 ? mapBrand(rows[0]) : null;
-      } catch (error) {
-        throw new Error(`Gagal memuat brand produk: ${error.message}`);
-      }
-    },
-    stockIns: async (product) => {
-      try {
-        const [rows] = await pool.execute('SELECT * FROM stock_in WHERE produk_id = ?', [product.id]);
-        return rows.map(mapStockIn);
-      } catch (error) {
-        throw new Error(`Gagal memuat riwayat stok masuk produk: ${error.message}`);
-      }
-    },
-    stockOuts: async (product) => {
-      try {
-        const [rows] = await pool.execute('SELECT * FROM stock_out WHERE produk_id = ?', [product.id]);
-        return rows.map(mapStockOut);
-      } catch (error) {
-        throw new Error(`Gagal memuat riwayat stok keluar produk: ${error.message}`);
-      }
-    },
-  },
->>>>>>> Stashed changes
 };
