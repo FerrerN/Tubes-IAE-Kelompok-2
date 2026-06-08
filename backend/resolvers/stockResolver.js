@@ -42,11 +42,6 @@ module.exports = {
   },
 
   Mutation: {
-<<<<<<< Updated upstream
-    // stock mutations
-  }
-};
-=======
     createStockIn: async (_, { input }) => {
       const { productId, supplierId, quantity, date, notes } = input;
 
@@ -188,4 +183,3 @@ module.exports = {
     },
   },
 };
->>>>>>> Stashed changes
