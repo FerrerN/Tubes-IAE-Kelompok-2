@@ -41,7 +41,11 @@ const resolvers = {
 };
 
 async function startServer() {
+<<<<<<< Updated upstream
   // Inisialisasi database sebelum server berjalan
+=======
+  // Inisialisasi tabel & seed data
+>>>>>>> Stashed changes
   await initDB();
 
   const server = new ApolloServer({
