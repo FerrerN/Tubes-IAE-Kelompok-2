@@ -6,358 +6,10 @@
   <title>Sports Inventory — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Karla:wght@400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    /* ─── RESET & TOKENS ─────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:        #0d0f14;
-      --surface:   #151820;
-      --card:      #1c2030;
-      --card-ho:   #222840;
-      --border:    #252b40;
-      --accent:    #00e5a0;
-      --accent2:   #ff5733;
-      --accent3:   #3b82f6;
-      --text:      #e8ecf4;
-      --muted:     #6b7394;
-      --tag-bg:    #1a2540;
-      --radius:    12px;
-      --shadow:    0 8px 32px rgba(0,0,0,.45);
-    }
-
-    body {
-      font-family: 'Karla', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    /* ─── HEADER ─────────────────────────────────────────── */
-    header {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(13,15,20,.92);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 32px;
-      display: flex; align-items: center; justify-content: space-between;
-      height: 64px;
-    }
-    .logo {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 800; font-size: 22px; letter-spacing: .5px;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .logo span { color: var(--accent); }
-    .logo-icon {
-      width: 34px; height: 34px; border-radius: 8px;
-      background: var(--accent); display: grid; place-items: center;
-    }
-    .logo-icon svg { width: 20px; height: 20px; fill: #0d0f14; }
-
-    nav { display: flex; gap: 6px; }
-    nav a {
-      font-family: 'Karla', sans-serif; font-size: 14px; font-weight: 600;
-      color: var(--muted); text-decoration: none; padding: 7px 14px;
-      border-radius: 8px; transition: all .2s;
-    }
-    nav a:hover, nav a.active { color: var(--text); background: var(--border); }
-    nav a.active { color: var(--accent); }
-
-    .header-right { display: flex; align-items: center; gap: 12px; }
-    .api-dot {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 12px; color: var(--muted); font-weight: 500;
-    }
-    .api-dot::before {
-      content: ''; width: 8px; height: 8px; border-radius: 50%;
-      background: #444; transition: background .3s;
-    }
-    .api-dot.connected::before { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
-    .api-dot.error::before { background: var(--accent2); }
-
-    /* ─── MAIN WRAPPER ───────────────────────────────────── */
-    main { max-width: 1280px; margin: 0 auto; padding: 32px 24px 60px; }
-
-    /* ─── HERO ───────────────────────────────────────────── */
-    .hero {
-      background: linear-gradient(135deg, #0f1e38 0%, #0d1620 50%, #0f1a28 100%);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 36px 40px;
-      margin-bottom: 28px;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero::before {
-      content: '';
-      position: absolute; right: -60px; top: -60px;
-      width: 300px; height: 300px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(0,229,160,.08) 0%, transparent 70%);
-    }
-    .hero-label {
-      font-size: 11px; font-weight: 700; letter-spacing: 2.5px;
-      color: var(--accent); text-transform: uppercase; margin-bottom: 8px;
-    }
-    .hero h1 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: clamp(28px, 4vw, 44px); font-weight: 800;
-      line-height: 1.05; margin-bottom: 10px;
-    }
-    .hero p { color: var(--muted); font-size: 15px; max-width: 480px; line-height: 1.6; }
-
-    /* ─── STATS BAR ──────────────────────────────────────── */
-    .stats-bar {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 16px; margin-bottom: 28px;
-    }
-    .stat-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 20px 22px;
-      display: flex; flex-direction: column; gap: 6px;
-      transition: border-color .2s;
-      animation: fadeUp .5s ease both;
-    }
-    .stat-card:hover { border-color: var(--accent); }
-    .stat-card:nth-child(1) { animation-delay: .05s; }
-    .stat-card:nth-child(2) { animation-delay: .10s; }
-    .stat-card:nth-child(3) { animation-delay: .15s; }
-    .stat-card:nth-child(4) { animation-delay: .20s; }
-    .stat-label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-    .stat-value {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 32px; font-weight: 800; line-height: 1;
-    }
-    .stat-value.green  { color: var(--accent); }
-    .stat-value.orange { color: var(--accent2); }
-    .stat-value.blue   { color: var(--accent3); }
-
-    /* ─── TOOLBAR ────────────────────────────────────────── */
-    .toolbar {
-      display: flex; gap: 12px; align-items: center;
-      margin-bottom: 24px; flex-wrap: wrap;
-    }
-    .search-wrap {
-      flex: 1; min-width: 220px; position: relative;
-    }
-    .search-wrap svg {
-      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-      width: 16px; height: 16px; stroke: var(--muted);
-    }
-    .search-wrap input {
-      width: 100%; background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; color: var(--text); font-family: 'Karla', sans-serif;
-      font-size: 14px; padding: 10px 14px 10px 38px;
-      outline: none; transition: border-color .2s;
-    }
-    .search-wrap input::placeholder { color: var(--muted); }
-    .search-wrap input:focus { border-color: var(--accent); }
-
-    select {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; color: var(--text); font-family: 'Karla', sans-serif;
-      font-size: 14px; padding: 10px 14px; outline: none;
-      cursor: pointer; transition: border-color .2s; min-width: 140px;
-    }
-    select:focus { border-color: var(--accent); }
-
-    .btn {
-      background: var(--accent); color: #0d0f14; border: none;
-      border-radius: 10px; font-family: 'Karla', sans-serif;
-      font-size: 14px; font-weight: 700; padding: 10px 20px;
-      cursor: pointer; transition: all .2s; white-space: nowrap;
-      display: flex; align-items: center; gap: 7px;
-    }
-    .btn:hover { background: #00ffb3; transform: translateY(-1px); }
-    .btn:active { transform: none; }
-    .btn svg { width: 15px; height: 15px; stroke: #0d0f14; }
-    .btn.ghost {
-      background: transparent; color: var(--muted);
-      border: 1px solid var(--border);
-    }
-    .btn.ghost:hover { border-color: var(--accent); color: var(--accent); background: transparent; }
-
-    .view-toggle { display: flex; gap: 4px; }
-    .view-toggle button {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 8px; padding: 9px 11px; cursor: pointer;
-      color: var(--muted); transition: all .2s; line-height: 0;
-    }
-    .view-toggle button.active, .view-toggle button:hover {
-      border-color: var(--accent); color: var(--accent); background: rgba(0,229,160,.08);
-    }
-    .view-toggle svg { width: 15px; height: 15px; stroke: currentColor; }
-
-    #product-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
-    #product-grid.list-view {
-      grid-template-columns: 1fr;
-    }
-
-    .product-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 14px; padding: 22px; cursor: pointer;
-      transition: all .25s; position: relative; overflow: hidden;
-      animation: fadeUp .45s ease both;
-    }
-    .product-card:hover {
-      border-color: var(--accent);
-      background: var(--card-ho);
-      transform: translateY(-3px);
-      box-shadow: var(--shadow);
-    }
-    .product-card::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(0,229,160,.03) 0%, transparent 60%);
-      opacity: 0; transition: opacity .25s;
-    }
-    .product-card:hover::after { opacity: 1; }
-
-    #product-grid.list-view .product-card {
-      display: grid;
-      grid-template-columns: 56px 1fr auto;
-      align-items: center; gap: 20px; padding: 16px 22px;
-    }
-    #product-grid.list-view .card-icon-wrap { margin-bottom: 0; }
-    #product-grid.list-view .card-body { display: contents; }
-    #product-grid.list-view .card-price-row { text-align: right; }
-
-    .card-icon-wrap {
-      width: 52px; height: 52px; border-radius: 12px;
-      background: var(--tag-bg); display: grid; place-items: center;
-      margin-bottom: 16px; font-size: 26px; flex-shrink: 0;
-    }
-
-    .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-    .tag {
-      font-size: 11px; font-weight: 700; letter-spacing: .8px;
-      text-transform: uppercase; padding: 3px 9px; border-radius: 6px;
-      background: var(--tag-bg); color: var(--muted);
-    }
-    .tag.cat  { color: var(--accent3); background: rgba(59,130,246,.12); }
-    .tag.brand { color: var(--accent);  background: rgba(0,229,160,.10); }
-
-    .card-name {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 19px; font-weight: 700; line-height: 1.2;
-      margin-bottom: 6px; color: var(--text);
-    }
-    .card-desc {
-      font-size: 13px; color: var(--muted); line-height: 1.55;
-      margin-bottom: 14px; display: -webkit-box;
-      -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-    }
-
-    .card-price-row {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 10px; margin-top: auto;
-    }
-    .card-price {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 22px; font-weight: 800; color: var(--accent);
-    }
-    .stock-badge {
-      font-size: 11px; font-weight: 700; padding: 4px 10px;
-      border-radius: 20px; letter-spacing: .5px;
-    }
-    .stock-badge.in   { background: rgba(0,229,160,.12); color: var(--accent); }
-    .stock-badge.low  { background: rgba(255,165,0,.12);  color: #ffa500; }
-    .stock-badge.out  { background: rgba(255,87,51,.12);  color: var(--accent2); }
-
-    .skeleton {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; padding: 22px; overflow: hidden;
-    }
-    .skel-line {
-      background: linear-gradient(90deg, var(--border) 25%, var(--card) 50%, var(--border) 75%);
-      background-size: 200% 100%;
-      border-radius: 6px; height: 14px; margin-bottom: 10px;
-      animation: shimmer 1.6s infinite;
-    }
-    .skel-icon { width: 52px; height: 52px; border-radius: 12px; margin-bottom: 16px; }
-    .skel-short { width: 55%; }
-    .skel-price { width: 35%; height: 20px; margin-top: 16px; }
-
-    .state-box {
-      grid-column: 1 / -1; text-align: center;
-      padding: 80px 24px; color: var(--muted);
-    }
-    .state-box .icon { font-size: 48px; margin-bottom: 16px; }
-    .state-box h3 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 6px;
-    }
-    .state-box p { font-size: 14px; line-height: 1.6; max-width: 380px; margin: 0 auto 20px; }
-
-    /* ─── MODAL ──────────────────────────────────────────── */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,.7);
-      backdrop-filter: blur(6px); z-index: 200;
-      display: none; align-items: center; justify-content: center; padding: 20px;
-    }
-    .modal-overlay.open { display: flex; animation: fadeIn .2s ease; }
-    .modal {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 18px; width: 100%; max-width: 520px;
-      padding: 32px; position: relative; animation: slideUp .25s ease;
-      max-height: 90vh; overflow-y: auto;
-    }
-    .modal-close {
-      position: absolute; top: 16px; right: 16px;
-      background: var(--border); border: none; border-radius: 8px;
-      width: 32px; height: 32px; cursor: pointer; color: var(--muted);
-      display: grid; place-items: center; transition: all .2s;
-    }
-    .modal-close:hover { background: var(--accent2); color: #fff; }
-    .modal h2 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 28px; font-weight: 800; margin-bottom: 20px;
-    }
-    .modal-row {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      padding: 12px 0; border-bottom: 1px solid var(--border);
-      font-size: 14px;
-    }
-    .modal-row:last-child { border-bottom: none; }
-    .modal-row-label { color: var(--muted); font-weight: 600; }
-    .modal-row-value { font-weight: 600; text-align: right; max-width: 60%; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(18px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; } to { opacity: 1; }
-    }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes shimmer {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    footer {
-      text-align: center; padding: 24px;
-      border-top: 1px solid var(--border); color: var(--muted); font-size: 13px;
-    }
-
-    @media (max-width: 768px) {
-      .stats-bar { grid-template-columns: repeat(2, 1fr); }
-      header { padding: 0 16px; }
-      nav { display: none; }
-      main { padding: 20px 16px 40px; }
-      .hero { padding: 24px 22px; }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- ─── HEADER ──────────────────────────────────────────── -->
 <header>
   <div class="logo">
     <div class="logo-icon">
@@ -380,17 +32,14 @@
   </div>
 </header>
 
-<!-- ─── MAIN ────────────────────────────────────────────── -->
 <main>
 
-  <!-- HERO -->
   <div class="hero">
     <p class="hero-label">Sports Inventory System</p>
     <h1>Manajemen<br>Inventaris Olahraga</h1>
     <p>Pantau seluruh produk, stok, dan supplier dalam satu tampilan terintegrasi secara real-time.</p>
   </div>
 
-  <!-- STATS -->
   <div class="stats-bar">
     <div class="stat-card">
       <span class="stat-label">Total Produk</span>
@@ -410,7 +59,6 @@
     </div>
   </div>
 
-  <!-- TOOLBAR -->
   <div class="toolbar">
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -461,9 +109,7 @@
     </button>
   </div>
 
-  <!-- PRODUCT GRID -->
   <div id="product-grid">
-    <!-- populated by JS -->
   </div>
 
 </main>
@@ -480,8 +126,8 @@
 </footer>
 
 <script>
-
 const GQL_ENDPOINT = 'http://localhost:3306/';
+
 
 const PRODUCTS_QUERY = `
   query GetAllProducts {
@@ -577,6 +223,7 @@ function applyFilters() {
     const matchBrand = !brand || p.brand?.name === brand;
     return matchSearch && matchCat && matchBrand;
   });
+
 
   filteredProducts.sort((a, b) => {
     const aq = getStock(a), bq = getStock(b);
@@ -772,7 +419,7 @@ document.getElementById('sort-select').addEventListener('change', applyFilters);
 document.getElementById('btn-refresh').addEventListener('click', () => {
   const catSel   = document.getElementById('filter-category');
   const brandSel = document.getElementById('filter-brand');
-
+  // clear dynamic options
   while (catSel.options.length > 1)   catSel.remove(1);
   while (brandSel.options.length > 1) brandSel.remove(1);
   fetchProducts();
