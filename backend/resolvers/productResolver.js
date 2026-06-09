@@ -1,5 +1,6 @@
 // backend/resolvers/productResolver.js
 const pool = require('../db/database');
+<<<<<<< Updated upstream
 const { mapProduct, mapCategory, mapBrand, mapStockIn, mapStockOut } = require('./helpers');
 
 module.exports = {
@@ -51,6 +52,209 @@ module.exports = {
       } catch (error) {
         throw new Error(`Gagal mengambil detail produk: ${error.message}`);
       }
+=======
+
+module.exports = {
+  Query: {
+    // ┌─────────────────────────────────────────┐
+    // │  SEMUA PRODUK  (getProducts)             │
+    // │  Mendukung filter: categoryId, brandId,  │
+    // │  dan search (pencarian nama)             │
+    // └─────────────────────────────────────────┘
+    getProducts: async (_, { categoryId, brandId, search }) => {
+      let sql = `
+        SELECT p.id, p.nama AS name, p.kategori_id AS categoryId,
+               p.harga AS price, p.stok AS stock,
+               k.id AS cat_id, k.nama AS cat_name
+        FROM produk p
+        LEFT JOIN kategori k ON p.kategori_id = k.id
+        WHERE 1=1
+      `;
+      const params = [];
+
+      if (categoryId) {
+        sql += ' AND p.kategori_id = ?';
+        params.push(categoryId);
+      }
+
+      if (search) {
+        sql += ' AND p.nama LIKE ?';
+        params.push(`%${search}%`);
+      }
+
+      const [rows] = await pool.execute(sql, params);
+
+      return rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        sku: '-',               // tabel belum punya kolom SKU
+        price: parseFloat(row.price),
+        stock: row.stock,
+        category: {
+          id: row.cat_id,
+          name: row.cat_name,
+        },
+        brand: { id: '0', name: '-' },   // tabel belum punya brand
+        stockIns: [],
+        stockOuts: [],
+      }));
+    },
+
+    // ┌─────────────────────────────────────────┐
+    // │  PRODUK BY ID  (getProductById)          │
+    // └─────────────────────────────────────────┘
+    getProductById: async (_, { id }) => {
+      const [rows] = await pool.execute(
+        `SELECT p.id, p.nama AS name, p.kategori_id AS categoryId,
+                p.harga AS price, p.stok AS stock,
+                k.id AS cat_id, k.nama AS cat_name
+         FROM produk p
+         LEFT JOIN kategori k ON p.kategori_id = k.id
+         WHERE p.id = ?`,
+        [id]
+      );
+
+      if (rows.length === 0) return null;
+
+      const row = rows[0];
+      return {
+        id: row.id,
+        name: row.name,
+        sku: '-',
+        price: parseFloat(row.price),
+        stock: row.stock,
+        category: {
+          id: row.cat_id,
+          name: row.cat_name,
+        },
+        brand: { id: '0', name: '-' },
+        stockIns: [],
+        stockOuts: [],
+      };
+    },
+
+    // ┌─────────────────────────────────────────┐
+    // │  LOW STOCK PRODUCTS                      │
+    // └─────────────────────────────────────────┘
+    getLowStockProducts: async (_, { threshold }) => {
+      const limit = threshold ?? 5;
+      const [rows] = await pool.execute(
+        `SELECT p.id, p.nama AS name, p.kategori_id AS categoryId,
+                p.harga AS price, p.stok AS stock,
+                k.id AS cat_id, k.nama AS cat_name
+         FROM produk p
+         LEFT JOIN kategori k ON p.kategori_id = k.id
+         WHERE p.stok <= ?`,
+        [limit]
+      );
+
+      return rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        sku: '-',
+        price: parseFloat(row.price),
+        stock: row.stock,
+        category: {
+          id: row.cat_id,
+          name: row.cat_name,
+        },
+        brand: { id: '0', name: '-' },
+        stockIns: [],
+        stockOuts: [],
+      }));
+    },
+  },
+
+  Mutation: {
+    // ┌─────────────────────────────────────────┐
+    // │  TAMBAH PRODUK                          │
+    // └─────────────────────────────────────────┘
+    addProduct: async (_, { input }) => {
+      const { name, sku, price, stock, categoryId, brandId } = input;
+
+      // 1. Validasi field wajib tidak kosong
+      if (!name || !price || !categoryId) {
+        throw new Error('Field name, price, categoryId wajib diisi');
+      }
+
+      // 2. Simpan ke MySQL
+      const [result] = await pool.execute(
+        'INSERT INTO produk (nama, kategori_id, harga, stok) VALUES (?, ?, ?, ?)',
+        [name, categoryId, price, stock ?? 0]
+      );
+
+      // 3. Ambil data kategori
+      const [cats] = await pool.execute('SELECT id, nama FROM kategori WHERE id = ?', [categoryId]);
+      const cat = cats[0] || { id: categoryId, nama: '-' };
+
+      return {
+        id: result.insertId.toString(),
+        name,
+        sku: sku || '-',
+        price,
+        stock: stock ?? 0,
+        category: { id: cat.id, name: cat.nama },
+        brand: { id: brandId || '0', name: '-' },
+        stockIns: [],
+        stockOuts: [],
+      };
+    },
+
+    // ┌─────────────────────────────────────────┐
+    // │  UPDATE PRODUK                          │
+    // └─────────────────────────────────────────┘
+    updateProduct: async (_, { id, input }) => {
+      const fields = [];
+      const params = [];
+
+      if (input.name !== undefined) { fields.push('nama = ?'); params.push(input.name); }
+      if (input.price !== undefined) { fields.push('harga = ?'); params.push(input.price); }
+      if (input.categoryId !== undefined) { fields.push('kategori_id = ?'); params.push(input.categoryId); }
+
+      if (fields.length === 0) throw new Error('Tidak ada field yang diupdate');
+
+      params.push(id);
+      await pool.execute(`UPDATE produk SET ${fields.join(', ')} WHERE id = ?`, params);
+
+      // Ambil data produk terbaru
+      const [rows] = await pool.execute(
+        `SELECT p.id, p.nama AS name, p.kategori_id AS categoryId,
+                p.harga AS price, p.stok AS stock,
+                k.id AS cat_id, k.nama AS cat_name
+         FROM produk p
+         LEFT JOIN kategori k ON p.kategori_id = k.id
+         WHERE p.id = ?`,
+        [id]
+      );
+
+      if (rows.length === 0) throw new Error(`Produk ID ${id} tidak ditemukan`);
+
+      const row = rows[0];
+      return {
+        id: row.id,
+        name: row.name,
+        sku: '-',
+        price: parseFloat(row.price),
+        stock: row.stock,
+        category: { id: row.cat_id, name: row.cat_name },
+        brand: { id: '0', name: '-' },
+        stockIns: [],
+        stockOuts: [],
+      };
+    },
+
+    // ┌─────────────────────────────────────────┐
+    // │  HAPUS PRODUK                           │
+    // └─────────────────────────────────────────┘
+    deleteProduct: async (_, { id }) => {
+      if (!id) throw new Error('ID produk wajib diisi');
+
+      const [rows] = await pool.execute('SELECT id FROM produk WHERE id = ?', [id]);
+      if (rows.length === 0) throw new Error(`Produk dengan ID "${id}" tidak ditemukan`);
+
+      await pool.execute('DELETE FROM produk WHERE id = ?', [id]);
+      return true;
+>>>>>>> Stashed changes
     },
 
     getLowStockProducts: async (_, { threshold }) => {

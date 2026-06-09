@@ -58,6 +58,7 @@ async function waitForDB(maxRetries = 20, delayMs = 5000) {
 
 async function startServer() {
   // Inisialisasi database dengan retry (untuk Docker startup)
+  // waitForDB() sudah memanggil initDB() di dalamnya — tidak perlu dipanggil lagi
   await waitForDB();
 
   const app    = express();
