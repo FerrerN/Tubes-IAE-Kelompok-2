@@ -10,10 +10,16 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: inventaris_toko
+      MYSQL_DATABASE: sport_db
       MYSQL_ROOT_PASSWORD: rootpassword
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   # ┌─────────────────────────────────────────┐
   # │  SERVICE BACKEND (Node.js/GraphQL)      │
@@ -28,12 +34,13 @@ services:
       - DB_PORT=3306
       - DB_NAME=sport_db
       - DB_USER=root
-      - DB_PASS=rootpassword
+      - DB_PASSWORD=rootpassword
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
-      - db # Memastikan database jalan sebelum backend di-start
+      db:
+        condition: service_healthy  # Tunggu sampai DB benar-benar siap
 
   # ┌─────────────────────────────────────────┐
   # │  SERVICE CLIENT (Frontend Nginx)        │
