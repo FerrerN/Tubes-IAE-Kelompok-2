@@ -36,13 +36,13 @@ Sports Inventory System adalah aplikasi **end-to-end terintegrasi** yang memungk
 ```
 ┌──────────────────────────────────────────────────────────┐
 │                    BROWSER / CLIENT                       │
-│              http://localhost:8080                        │
+│              http://localhost:8081                        │
 └──────────────────────┬───────────────────────────────────┘
-                       │ HTTP (static files)
+                       │ HTTP (static files & /graphql proxy)
                        ▼
 ┌──────────────────────────────────────────────────────────┐
-│              NGINX CONTAINER (:80 → :8080)                │
-│         Menyajikan file HTML/CSS/JS statis                │
+│              NGINX CONTAINER (:80 → :8081)                │
+│   Menyajikan file HTML/CSS/JS statis & Reverse Proxy      │
 └──────────────────────┬───────────────────────────────────┘
                        │ fetch POST (GraphQL JSON)
                        ▼
@@ -148,7 +148,7 @@ docker-compose up --build
 
 | Service | URL | Keterangan |
 |---|---|---|
-| 🌐 Frontend | http://localhost:8080 | Dashboard inventaris |
+| 🌐 Frontend | http://localhost:8081 | Dashboard inventaris |
 | 🚀 GraphQL API | http://localhost:4000 | Apollo Sandbox (Playground) |
 | 🗄 MySQL | localhost:3306 | User: root / Pass: rootpassword |
 
@@ -179,7 +179,7 @@ cd backend
 npm install
 
 # 3. Sesuaikan .env (opsional, sudah ada default)
-# DB_HOST=localhost, DB_USER=root, DB_PASSWORD=, DB_NAME=sport_db
+# DB_HOST=localhost, DB_USER=root, DB_PASSWORD=rootpassword, DB_NAME=sport_db
 
 # 4. Jalankan server
 npm start
@@ -412,7 +412,20 @@ Tubes-IAE-Kelompok-2/
 │       └── 📄 helpers.js          # Shared DB-to-GraphQL mapper functions
 │
 └── 📂 client/
-    └── 📄 index.html              # SPA Frontend (Dashboard + 3 halaman, 4 form mutation)
+    ├── 📄 Dockerfile              # Image Nginx Alpine
+    ├── 📄 nginx.conf              # Konfigurasi Reverse Proxy Nginx
+    ├── 📄 index.html              # SPA Entry Point HTML
+    ├── 📂 css/
+    │   └── 📄 style.css           # Styling terpusat
+    └── 📂 js/                     # Logika Frontend Modular
+        ├── 📄 api.js              # Fetch helper API GraphQL
+        ├── 📄 config.js           # Konstanta Query & Mutation
+        ├── 📄 dashboard.js        # Logika tampilan data produk
+        ├── 📄 main.js             # Entry event listeners utama
+        ├── 📄 produk.js           # Kelola CRUD produk
+        ├── 📄 stok.js             # Kelola mutasi stok in/out
+        ├── 📄 supplier.js         # Kelola master supplier
+        └── 📄 ui.js               # Helper UI, Toast, dan Modal
 ```
 
 ---
