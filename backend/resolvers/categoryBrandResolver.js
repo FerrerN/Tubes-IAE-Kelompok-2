@@ -1,6 +1,5 @@
 // backend/resolvers/categoryBrandResolver.js
 const pool = require('../db/database');
-<<<<<<< Updated upstream
 const { mapCategory, mapBrand, mapProduct } = require('./helpers');
 
 module.exports = {
@@ -20,36 +19,10 @@ module.exports = {
       } catch (error) {
         throw new Error(`Gagal mengambil data brand: ${error.message}`);
       }
-=======
-
-module.exports = {
-  Query: {
-    // ┌─────────────────────────────────────────┐
-    // │  SEMUA KATEGORI  (getCategories)         │
-    // └─────────────────────────────────────────┘
-    getCategories: async () => {
-      const [rows] = await pool.execute('SELECT id, nama AS name FROM kategori ORDER BY id');
-      return rows.map(row => ({
-        id: row.id,
-        name: row.name,
-        products: [],  // bisa di-resolve terpisah kalau dibutuhkan
-      }));
-    },
-
-    // ┌─────────────────────────────────────────┐
-    // │  SEMUA BRAND  (getBrands)                │
-    // │  Tabel brand belum ada di DB,            │
-    // │  return array kosong untuk sementara     │
-    // └─────────────────────────────────────────┘
-    getBrands: async () => {
-      // TODO: Buat tabel brand di init.js, lalu query di sini
-      return [];
->>>>>>> Stashed changes
     },
   },
 
   Mutation: {
-<<<<<<< Updated upstream
     addCategory: async (_, { name }) => {
       if (!name || name.trim() === '') {
         throw new Error('Nama kategori wajib diisi');
@@ -111,33 +84,4 @@ module.exports = {
       }
     },
   },
-=======
-    // ┌─────────────────────────────────────────┐
-    // │  TAMBAH KATEGORI                        │
-    // └─────────────────────────────────────────┘
-    addCategory: async (_, { name }) => {
-      if (!name) throw new Error('Nama kategori wajib diisi');
-
-      const [result] = await pool.execute(
-        'INSERT INTO kategori (nama) VALUES (?)',
-        [name]
-      );
-
-      return {
-        id: result.insertId.toString(),
-        name,
-        products: [],
-      };
-    },
-
-    // ┌─────────────────────────────────────────┐
-    // │  TAMBAH BRAND                           │
-    // │  Belum ada tabel — throw error informatif│
-    // └─────────────────────────────────────────┘
-    addBrand: async (_, { name, country }) => {
-      // TODO: Buat tabel brand di init.js
-      throw new Error('Tabel brand belum tersedia di database. Silakan buat tabel terlebih dahulu.');
-    },
-  }
->>>>>>> Stashed changes
 };
