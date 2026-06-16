@@ -1,6 +1,5 @@
 // backend/resolvers/productResolver.js
 const pool = require('../db/database');
-<<<<<<< Updated upstream
 const { mapProduct, mapCategory, mapBrand, mapStockIn, mapStockOut } = require('./helpers');
 
 module.exports = {
