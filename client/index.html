@@ -427,11 +427,12 @@ const GQL_ENDPOINT = '/graphql';
 
 const PRODUCTS_QUERY = `
   query GetAllProducts {
-    products {
+    getProducts {
       id
       name
-      description
+      sku
       price
+      stock
       category {
         id
         name
@@ -439,9 +440,6 @@ const PRODUCTS_QUERY = `
       brand {
         id
         name
-      }
-      stock {
-        quantity
       }
     }
   }
@@ -492,7 +490,7 @@ async function fetchProducts() {
       throw new Error(json.errors[0]?.message || 'GraphQL error');
     }
 
-    allProducts = json.data?.products || [];
+    allProducts = json.data?.getProducts || [];
     setApiStatus('connected');
     populateFilters(allProducts);
     applyFilters();

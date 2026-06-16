@@ -38,6 +38,8 @@ services:
     build: ./client
     ports:
       - "8081:80"
+    volumes:
+      - ./client:/usr/share/nginx/html
     depends_on:
       - backend
 
