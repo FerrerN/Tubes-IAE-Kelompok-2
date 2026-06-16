@@ -10,12 +10,6 @@ services:
       MYSQL_ROOT_PASSWORD: rootpassword
     volumes:
       - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
 
   # ┌─────────────────────────────────────────┐
   # │  SERVICE BACKEND (Node.js/GraphQL)      │
@@ -35,9 +29,7 @@ services:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
-      db:
-        condition: service_healthy
-    restart: on-failure
+      - db # Memastikan database jalan sebelum backend di-start
 
   # ┌─────────────────────────────────────────┐
   # │  SERVICE CLIENT (Frontend Nginx)        │
@@ -51,4 +43,4 @@ services:
 
 # Mendeklarasikan volume untuk menyimpan data MySQL secara permanen
 volumes:
-  mysql_data:
+  mysql_data:
