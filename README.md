@@ -434,7 +434,7 @@ Tubes-IAE-Kelompok-2/
 
 | No | Nama | NIM | Kontribusi |
 |---|---|---|---|
-| 1 | *(Anggota 1)* | *(NIM)* | *(Modul yang dikerjakan)* |
+| 1 | *Ferrer Nafier* | *102022400008* | *Modul Backend dan konfigurasi sistem* |
 | 2 | *(Anggota 2)* | *(NIM)* | *(Modul yang dikerjakan)* |
 | 3 | *(Anggota 3)* | *(NIM)* | *(Modul yang dikerjakan)* |
 | 4 | *(Anggota 4)* | *(NIM)* | *(Modul yang dikerjakan)* |
